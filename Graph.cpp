@@ -188,9 +188,13 @@ void Graph::tryToSatisfyOffersKeepingTheShortestPath(const char* outputfilename 
         for (auto h : i.second) {
             demandSatisfied =false;
             //FIXME : need to implement a move asign to reinitialize the size back to zero otherwise the subsequent check of the demandPath 's size doesn't make sense
-            auto demandPath = shortestPath(i.first , h );
+        
+            vector<string> demandPath;
+            demandPath.resize(0);
+            demandPath= shortestPath(i.first , h );
             if (demandPath.size() < 2 ) { //there is no path
                 cout<< "impossible path"<<endl;
+                outputfile<< endl<<"impossible path";
                 continue;
             }else{
                 //then we need to check the offers
@@ -198,18 +202,22 @@ void Graph::tryToSatisfyOffersKeepingTheShortestPath(const char* outputfilename 
                 for (auto j : offercopy) {
                     //iterating over the adjacency list of offers
                     for (auto k = j.second.begin() ; k != j.second.end() ; k++ ) {
-                        auto offerPath = shortestPath(j.first, k->vertexName);
-                        if (k->var >0 && pathOneContainPathTow(offerPath,demandPath )) {
+                        vector<string> offerPath ;
+                        offerPath.resize(0);
+                        offerPath= shortestPath(j.first, k->vertexName);
+                        bool  pathOnacontainpathtow=pathOneContainPathTow(offerPath,demandPath );
+                        if (k->var >0 && pathOnacontainpathtow) {
                             // demand was satisfied
                             --k->var; //decrement the number of availeble seats for the offer
                             demandSatisfied = true ;
-                            cout<< "demand satisfied"<<endl;
+                            cout<< endl<<"demand satisfied"<<endl;
                             cout<< "demand : " <<i.first <<"->"<< h<<endl;
-                            cout<< "offer : "<< j.first << "->"<< k->vertexName << k->var<<endl;
+                            cout<< "satisfied by offer : "<< j.first << "->"<< k->vertexName << k->var<<endl;
                             //write result to a file
+                            outputfile<<endl<< "demand satisfied"<<endl;
+                            outputfile<<"demand : " <<i.first <<"->"<< h<<endl;
+                            outputfile<<"satisfied by offer : "<< j.first << "->"<< k->vertexName << k->var<<endl;
                             break;
-                        }else if (pathOneContainPathTow(offerPath,demandPath ) == false ){
-                            //BEWARE : path is not satisfied in this iteration
                         }
                     }
                     if (demandSatisfied) {
@@ -220,14 +228,17 @@ void Graph::tryToSatisfyOffersKeepingTheShortestPath(const char* outputfilename 
             if (!demandSatisfied) {
                 //write to file that demand can't be satisfied
                 cout<< "demand can't be satisfied "<< i.first << " -> " << h<<endl;
-                
+                outputfile<<"demand can't be satisfied "<< i.first << " -> " << h<<endl;
+               
             }
             cout<<endl<<"*************"<<endl;
+             outputfile<<endl<<"*************"<<endl;
         }
     }
+    outputfile.close();
 }
-bool compareString (string &a ,string &b){
-    return a > b;
+bool compareString (const string &a ,const string &b){
+    return a < b;
 };
 
 bool Graph::pathOneContainPathTow(vector<string> & Offer, vector<string> & demand){
@@ -273,9 +284,6 @@ vector<string>  Graph::shortestPath(string origin, string destination){
                         pathweight[*vertexIterator] =  previousPathWeight[*predecessorIterator] + EdgeWeight(*predecessorIterator,*vertexIterator);
                         parent[*vertexIterator] = *predecessorIterator;
                 }
-//                else {
-//                    pathweight[*vertexIterator]= previousPathWeight[*vertexIterator];
-//                }
             }
         }
     
