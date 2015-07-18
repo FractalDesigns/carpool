@@ -11,6 +11,7 @@
 #include <set>
 
 using namespace std;
+
 #ifndef PROJET_D_ÉTÉ_GRAPH_H
 #define PROJET_D_ÉTÉ_GRAPH_H
 
@@ -23,12 +24,9 @@ typedef struct vertex{
 }vertex;
 #endif
 
-
-
 #define MAX_CHARS_PER_LINE  20
 #define MAX_TOKENS_PER_LINE  3
 #define INFINITY 10000
-
 
 class Graph {
 private:
@@ -37,6 +35,7 @@ private:
     map<string, vector<string> > demands;
     // create a file-reading object
     ifstream inputfile;
+    ofstream outputfile;
     set<string> vertices;
     
     //private methods:
@@ -44,23 +43,18 @@ private:
     void printVector(vector<vertex> & );
     void printVector(vector<string> & );
     bool pathExistsFromTo(string, string);
-    
-    
     vector<string> searchForpreviousVerticesOf(string);
     
-    
-        
 public:
+    
     vector<string>  shortestPath(string , string );
     bool pathOneContainPathTow(vector<string> &, vector<string> &);
-    void tryToSatisfyOffersKeepingTheShortestPath();
+    void tryToSatisfyOffersKeepingTheShortestPath(const char* outputfilename = "result.txt");
     void printShortestPathFromto(string  , string );
     Graph(const char* inputfilename);
     bool inputfileisgood();
     void showGraphContent();
     void writeSolutionToFile();
-    void generateoutputfile();
-    void readFileAndWriteTokensToAnotherFile();
     void printVerticesSet();
     ~Graph();
 

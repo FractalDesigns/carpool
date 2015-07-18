@@ -176,68 +176,54 @@ bool Graph::pathExistsFromTo(string origin , string destination){
     
     return false;
 }
-void Graph::tryToSatisfyOffersKeepingTheShortestPath(){
 
+void Graph::tryToSatisfyOffersKeepingTheShortestPath(const char* outputfilename ){
+
+    outputfile.open(outputfilename);
     auto offercopy = offers ; // must make a copy because data might be changed
-    
+    bool demandSatisfied ;
     for (  auto i : demands) {
         //the demand list is similar to adjacency list of the graph
-        
         //iterate over the destinations
-        
         for (auto h : i.second) {
-            
+            demandSatisfied =false;
+            //FIXME : need to implement a move asign to reinitialize the size back to zero otherwise the subsequent check of the demandPath 's size doesn't make sense
             auto demandPath = shortestPath(i.first , h );
-            cout << "demandPath : ";
-            printVector(demandPath);
             if (demandPath.size() < 2 ) { //there is no path
                 cout<< "impossible path"<<endl;
                 continue;
-                
             }else{
                 //then we need to check the offers
+                
                 for (auto j : offercopy) {
                     //iterating over the adjacency list of offers
                     for (auto k = j.second.begin() ; k != j.second.end() ; k++ ) {
                         auto offerPath = shortestPath(j.first, k->vertexName);
                         if (k->var >0 && pathOneContainPathTow(offerPath,demandPath )) {
-                            
-                            cout <<endl<< " demand " << i.first <<" -> " << h<< " was satisfied ";
-                            cout << "by the offer "<< j.first << " "<< k->vertexName <<" : "<< k->var<<endl;
-                            --k->var;
-                            //cout<< "and the offer is " <<endl<< j.first << " "<< k->vertexName <<" : "<< k->var<<endl;
-                            cout<< "offer path : ";
-                           // printShortestPathFromto(j.first, k->vertexName);
-                            printVector(offerPath);
-//                            FIXME: try to optemize useless iterations
-//                              every time an offer is no longer available we shoold pop it out of the container to get rid of useless iterations
-//                            if (k->var == 0) {
-//                                j.second.erase(k);
-//                            }
-//                            
-//                            if (j.second.size() == 0) {
-//                                offercopy.erase(j.first);
-//                            }
-//                            
+                            // demand was satisfied
+                            --k->var; //decrement the number of availeble seats for the offer
+                            demandSatisfied = true ;
+                            cout<< "demand satisfied"<<endl;
+                            cout<< "demand : " <<i.first <<"->"<< h<<endl;
+                            cout<< "offer : "<< j.first << "->"<< k->vertexName << k->var<<endl;
+                            //write result to a file
+                            break;
                         }else if (pathOneContainPathTow(offerPath,demandPath ) == false ){
-                            cout<< endl <<"demand " << i.first <<" -> " << h<< " cannot be satisfied"<<endl;
-                            cout<<"demand path :";
-                            printVector(demandPath);
-                            cout<<"offer path : ";
-                            printVector(offerPath);
-                            
+                            //BEWARE : path is not satisfied in this iteration
                         }
-                        
-                        cout<<endl<<"---------------"<<endl;
-                        
                     }
-                    
+                    if (demandSatisfied) {
+                        break; // because demand is satisfied no need to continue looping over other offers
+                    }
                 }
             }
-            
-            
+            if (!demandSatisfied) {
+                //write to file that demand can't be satisfied
+                cout<< "demand can't be satisfied "<< i.first << " -> " << h<<endl;
+                
+            }
+            cout<<endl<<"*************"<<endl;
         }
-        
     }
 }
 bool compareString (string &a ,string &b){
