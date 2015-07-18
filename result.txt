@@ -1,0 +1,30 @@
+
+demand satisfied
+demand : a->c
+satisfied by offer : a->c2
+
+*************
+
+demand satisfied
+demand : a->e
+satisfied by offer : a->e3
+
+*************
+demand can't be satisfied d -> e
+
+*************
+
+demand satisfied
+demand : d->f
+satisfied by offer : d->f0
+
+*************
+demand can't be satisfied d -> a
+
+*************
+
+demand satisfied
+demand : f->e
+satisfied by offer : a->e3
+
+*************
