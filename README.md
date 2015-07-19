@@ -21,7 +21,7 @@ b->c:2
 
 this will construct the following Graph :
 
-![Graph](image link)  
+![Graph](https://github.com/afritfr/carpool/blob/master/images/example.png)  
 
 `BEWARE : a single line shooldn't hold more than `**one**` edge description ( a->b:3 )` 
 
@@ -48,4 +48,4 @@ d->b:1
 
 the weight here represent the number of available seats per offer
 
-Go ahead and check the example input file [`test.txt`]() and the output file [`result.txt`]() produced by the main()   
+Go ahead and check the example input file [`test.txt`](https://github.com/afritfr/carpool/blob/master/test.txt) and the output file [`result.txt`](https://github.com/afritfr/carpool/blob/master/result.txt) produced by the main()   
