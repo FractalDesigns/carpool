@@ -27,7 +27,11 @@ int main(int argc, const char * argv[])
     Graph carPoolingGraph("test.txt");
     //carPoolingGraph.showGraphContent();
     //carPoolingGraph.printVerticesSet();
-
-    carPoolingGraph.tryToSatisfyOffersKeepingTheShortestPath();
+    
+    auto v1 =carPoolingGraph.shortestPath("e", "c");
+    cout<<carPoolingGraph.pathWeight(v1);
+    printVector(v1);
+    //carPoolingGraph.tryToSatisfyDemandsKeepingTheShortestPath();
+    carPoolingGraph.tryToSatisfyAllDemands();
     return EXIT_SUCCESS;
 }

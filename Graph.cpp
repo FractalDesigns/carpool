@@ -4,8 +4,9 @@
 #include <iostream>
 #include <fstream>
 #include <cstring>
-#include <stack>
 #include "Graph.h"
+#include <stack>
+
 using namespace std;
 
 bool Graph::inputfileisgood(){
@@ -21,6 +22,26 @@ int convertToInt(const char number[]){
         return numb;
     }
     return 0;
+}
+
+int Graph::pathWeight(vector<string> & path){
+    int pathweight = 0 ;
+    for (auto i = path.begin(); i != path.end()-1; i++) {
+        for (auto j : mgraph) {
+            if(*i == j.first){
+                i++;
+                for (auto k : j.second){
+                    if (k.vertexName==*i) {
+                        pathweight += k.var;
+                        break;
+                    }
+                }
+                i--;
+                break;
+            }
+        }
+    }
+    return pathweight;
 }
 
 Graph::Graph(const char * inputfilename) {
@@ -173,13 +194,106 @@ vector<string> Graph::searchForpreviousVerticesOf(string vertexName){
     return previousvertices;
 }
 bool Graph::pathExistsFromTo(string origin , string destination){
-    
-    return false;
+    //if shortest path doesn't exist then no path can exist
+    auto p = shortestPath(origin, destination);
+    int n = 0 ;
+    for (auto i : p)
+        if (i != "")
+            n++;
+    return n>1;
 }
 
-void Graph::tryToSatisfyOffersKeepingTheShortestPath(const char* outputfilename ){
+bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pathTwo){
+    int minmumLinkerPathWeight = INFINITY;
+    string lastVertex = *(pathTwo.end());
+    int sizeOfNewPath = 0;
+    string appendNode = "";
+    for (auto i : pathTwo){
+        vector<string> linkerPath;
+        if (pathExistsFromTo(i, pathOne[0])){
+            linkerPath = shortestPath(i,pathOne[0]);
+            if (pathWeight(linkerPath)< minmumLinkerPathWeight) {
+                minmumLinkerPathWeight = pathWeight(linkerPath);
+                appendNode = i;
+            }
+        }
+    }
+    if (appendNode == *(pathTwo.end())) {
+        return false; // driver reached destination and shouldn't go back
+    }else{ //start appending the path
+        auto iter1 = pathOne.begin();
+        bool startAppend =false;
+        for (auto iter2 = pathTwo.begin(); iter2 != pathTwo.end(); iter2++) {
+            sizeOfNewPath++;
+            if (*iter2 == appendNode) {
+                pathTwo.insert(++iter2,*iter1 );
+                startAppend =true;
+            }else if (startAppend){
+                pathTwo.insert(++iter2, *(++iter1));
+            }
+            if (iter1 == pathOne.end()) {
+                break;
+            }
+        }
+        //now the driver need to his initial destination
+        //first we need to resize the path two to get rid of overflowwing nodes
+        pathTwo.resize(sizeOfNewPath);
+        auto pathTail = shortestPath(*pathOne.end(),lastVertex);
+        for (auto i : pathTail)
+            pathTwo.push_back(i);
+        return true;
+    }
+}
+//#warning FIXME
+//#error bug
 
-    outputfile.open(outputfilename);
+void Graph::tryToSatisfyAllDemands(const char* outputfilename ){
+    //FIXME : implement method
+    auto demandcopy = demands ;
+    int deletionIndex = -1 ;
+    auto offerCopy = offers ;
+    bool offerSatisfied;
+    outputfile.open(outputfilename ); //FIXME: when done testing add fstream::app flag to open file i append mode
+    for (auto i : offerCopy) {
+        for(auto j : i.second){ // adjacency list vertex-Offer
+            offerSatisfied = false;
+            vector<string> offerPath;
+           // offerPath.resize(0);
+            offerPath= shortestPath(i.first , j.vertexName );
+            if (offerPath.size() < 2 ) { //there is no path
+                cout<< "impossible path"<<endl; //FIXME: problem with size calculation here, body of the if statement never executed witch makes it a dead code
+                outputfile<< endl<<"impossible path";
+                continue;
+            }else{
+                //then we need to check the demands
+                for (auto k : demandcopy ) {
+                    for ( auto l : k.second) { //adjacency list vertex-demand
+                        vector<string> demandPath ;
+                        demandPath.resize(0);
+                        demandPath = shortestPath(k.first, l );
+                        deletionIndex++;
+                        //FIXME: write a method called apend path to append demand path to the offer path
+                        if (j.var >0 && appendPathOneToPathTwo(demandPath, offerPath)) {
+                            j.var--;
+                            
+                        }
+                        if (j.var == 0) {
+                            break;
+                        }
+                        
+                    }
+                    if (j.var == 0) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    outputfile.close();
+}
+void Graph::tryToSatisfyDemandsKeepingTheShortestPath(const char* outputfilename ){
+
+    outputfile.open(outputfilename);//FIXME: when done testing add fstream::app flag to open file i append mode
     auto offercopy = offers ; // must make a copy because data might be changed
     bool demandSatisfied ;
     for (  auto i : demands) {
@@ -188,12 +302,11 @@ void Graph::tryToSatisfyOffersKeepingTheShortestPath(const char* outputfilename 
         for (auto h : i.second) {
             demandSatisfied =false;
             //FIXME : need to implement a move asign to reinitialize the size back to zero otherwise the subsequent check of the demandPath 's size doesn't make sense
-        
             vector<string> demandPath;
             demandPath.resize(0);
             demandPath= shortestPath(i.first , h );
             if (demandPath.size() < 2 ) { //there is no path
-                cout<< "impossible path"<<endl;
+                cout<< "impossible path"<<endl; //FIXME: problem with size calculation here
                 outputfile<< endl<<"impossible path";
                 continue;
             }else{

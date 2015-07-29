@@ -2,10 +2,10 @@
 // Created by Achraf EL AFRIT on 6/30/15.
 //
 
+#include <algorithm>
+#include <fstream>
 #include <vector>
 #include <string>
-#include <fstream>
-#include <algorithm>
 #include <stack>
 #include <map>
 #include <set>
@@ -44,14 +44,17 @@ private:
     void printVector(vector<string> & );
     bool pathExistsFromTo(string, string);
     vector<string> searchForpreviousVerticesOf(string);
-    
+    bool appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pathTwo);
 public:
     
     vector<string>  shortestPath(string , string );
     bool pathOneContainPathTow(vector<string> &, vector<string> &);
-    void tryToSatisfyOffersKeepingTheShortestPath(const char* outputfilename = "result.txt");
+    void tryToSatisfyDemandsKeepingTheShortestPath(const char* outputfilename = "result.txt");
+    void tryToSatisfyAllDemands(const char* outputfilename = "result.txt");
     void printShortestPathFromto(string  , string );
+    
     Graph(const char* inputfilename);
+    int pathWeight(vector<string> &);
     bool inputfileisgood();
     void showGraphContent();
     void writeSolutionToFile();
