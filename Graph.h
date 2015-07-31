@@ -44,9 +44,9 @@ private:
     void printVector(vector<string> & );
     bool pathExistsFromTo(string, string);
     vector<string> searchForpreviousVerticesOf(string);
-    bool appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pathTwo);
-public:
     
+public:
+    bool appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pathTwo);
     vector<string>  shortestPath(string , string );
     bool pathOneContainPathTow(vector<string> &, vector<string> &);
     void tryToSatisfyDemandsKeepingTheShortestPath(const char* outputfilename = "result.txt");

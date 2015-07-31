@@ -28,10 +28,18 @@ int main(int argc, const char * argv[])
     //carPoolingGraph.showGraphContent();
     //carPoolingGraph.printVerticesSet();
     
-    auto v1 =carPoolingGraph.shortestPath("e", "c");
-    cout<<carPoolingGraph.pathWeight(v1);
+    auto v1 =carPoolingGraph.shortestPath("a", "c");
+    cout<<"path two : "<<endl<<carPoolingGraph.pathWeight(v1);
     printVector(v1);
-    //carPoolingGraph.tryToSatisfyDemandsKeepingTheShortestPath();
-    carPoolingGraph.tryToSatisfyAllDemands();
+    auto v2 = carPoolingGraph.shortestPath("b", "c");
+    cout<<"path one : "<<endl<<carPoolingGraph.pathWeight(v2);
+    printVector(v2);
+   auto boo = carPoolingGraph.appendPathOneToPathTwo(v2, v1);
+    printVector(v1);
+    printVector(v2);
+    cout << boo ;
+    //carPoolingGraph.tryToSatisfyAllDemands();
+    
+    
     return EXIT_SUCCESS;
 }
