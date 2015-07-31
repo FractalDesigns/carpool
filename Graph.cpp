@@ -206,15 +206,19 @@ bool Graph::pathExistsFromTo(string origin , string destination){
 bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pathTwo){
     int minmumLinkerPathWeight = INFINITY;
     string lastVertex =pathTwo[pathTwo.size()-1];
-    int sizeOfNewPath = 0;
+    int sizeOfNewPath = 0; //how many vertices he's got
     string appendNode = "";
-    for (auto i : pathTwo){
-        vector<string> linkerPath;
-        if (pathExistsFromTo(i, pathOne[0])){
-            linkerPath = shortestPath(i,pathOne[0]);
-            if (pathWeight(linkerPath)< minmumLinkerPathWeight) {
-                minmumLinkerPathWeight = pathWeight(linkerPath);
-                appendNode = i;
+    if (pathTwo[0] == pathOne[0]) {
+        appendNode = pathTwo[0];
+    }else{
+        for (auto i : pathTwo){
+            vector<string> linkerPath;
+            if (pathExistsFromTo(i, pathOne[0])){
+                linkerPath = shortestPath(i,pathOne[0]);
+                if (pathWeight(linkerPath)< minmumLinkerPathWeight) {
+                    minmumLinkerPathWeight = pathWeight(linkerPath);
+                    appendNode = i;
+                }
             }
         }
     }
@@ -231,6 +235,10 @@ bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pa
             iter2 = pathTwo.begin() + sizeOfNewPath - 1 ;
             if (*iter2 == appendNode) {
                 //FIXME: insert method reallocate another space inthe memory for the vector each time causing the bad access code
+                if (*iter1 == appendNode){
+                    iter1++;
+                    //continue;
+                }
                 pathTwo.insert(++iter2,*iter1 );
                 startAppend =true;
             }else if (startAppend){
@@ -244,20 +252,6 @@ bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pa
             iter2 = pathTwo.begin() + sizeOfNewPath ;
             //iter2++;
         }
-        //////FIXME : change for loop into while loop
-//        for (auto iter2 = pathTwo.begin(); iter2 != pathTwo.end(); iter2++) {
-//            sizeOfNewPath++;
-//            if (*iter2 == appendNode) {
-//                pathTwo.insert(++iter2,*iter1 );
-//                startAppend =true;
-//            }else if (startAppend){
-//                pathTwo.insert(++iter2, *(++iter1));
-//            }
-//            if (iter1 == pathOne.end()) {
-//                break;
-//            }
-//        }
-        //////
         //now the driver need to his initial destination
         //first we need to resize the path two to get rid of overflowwing nodes
         pathTwo.resize(sizeOfNewPath);
