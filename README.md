@@ -68,8 +68,8 @@ here is my terminal output : for the same example after calling `showGraphConten
 ![terminal output](https://github.com/afritfr/carpool/blob/master/images/terminal colorized output.png)
 
 ###Other useful methods:
-  *`pathWeight`
-  *`showGraphContent`
-  *`printShortestPathFromto`
+  *`pathWeight`  
+  *`showGraphContent`  
+  *`printShortestPathFromto`  
 
 ---
