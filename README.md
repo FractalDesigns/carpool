@@ -67,9 +67,9 @@ I figured that it would be nice to have colorized output.
 here is my terminal output : for the same example after calling `showGraphContent` ,`tryToSatisfyDemandsKeepingTheShortestPath`and `tryToSatisfyAllDemands` :  
 ![terminal output](https://github.com/afritfr/carpool/blob/master/images/terminal colorized output.png)
 
-###Other useful methods:
-  *`pathWeight`  
-  *`showGraphContent`  
-  *`printShortestPathFromto`  
+###Other useful methods:  
+  * `pathWeight` 
+  * `showGraphContent`
+  * `printShortestPathFromto`
 
 ---
