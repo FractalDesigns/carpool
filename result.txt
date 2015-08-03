@@ -1,30 +1,42 @@
 
-demand satisfied
-demand : a->c
-satisfied by offer : a->c2
+demand : a --> c was satisfied
+satisfied by offer : a ==> c : 2
 
-*************
+****************
 
-demand satisfied
-demand : a->e
-satisfied by offer : a->e3
+demand : a --> e was satisfied
+satisfied by offer : a ==> e : 3
 
-*************
-demand can't be satisfied d -> e
+****************
+demand can't be satisfied d --> e
 
-*************
+****************
 
-demand satisfied
-demand : d->f
-satisfied by offer : d->f0
+demand : d --> f was satisfied
+satisfied by offer : d ==> f : 0
 
-*************
-demand can't be satisfied d -> a
+****************
+demand can't be satisfied d --> a
 
-*************
+****************
 
-demand satisfied
-demand : f->e
-satisfied by offer : a->e3
+demand : f --> e was satisfied
+satisfied by offer : a ==> e : 3
 
-*************
+****************
+the offer : a ==> e picked up the demand : a --> c
+old offer path is :[a, f, e, ]
+new offer path is : [a, d, c, e, ]
+the offer : a ==> e picked up the demand : d --> f
+old offer path is :[a, d, c, e, ]
+new offer path is : [a, d, c, f, e, ]
+the offer : a ==> c picked up the demand : a --> e
+old offer path is :[a, d, c, ]
+new offer path is : [a, f, e, f, c, ]
+the offer : a ==> c picked up the demand : d --> e
+old offer path is :[a, f, e, f, c, ]
+new offer path is : [a, d, e, f, c, ]
+ ****************
+unsatisfied demands are : 
+d --> a
+f --> e

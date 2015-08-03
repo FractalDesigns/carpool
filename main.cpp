@@ -25,6 +25,7 @@ void printVector(const vector<string> &a){
 int main(int argc, const char * argv[])
 {
     Graph carPoolingGraph("test.txt");
+    carPoolingGraph.showGraphContent();
     carPoolingGraph.tryToSatisfyDemandsKeepingTheShortestPath();
     carPoolingGraph.tryToSatisfyAllDemands();   
     return EXIT_SUCCESS;

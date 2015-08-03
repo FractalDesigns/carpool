@@ -9,10 +9,6 @@
 
 using namespace std;
 
-bool Graph::inputfileisgood(){
-    return inputfile.is_open();
-}
-
 int convertToInt(const char number[]){
     int numb = -3;
     try {
@@ -149,33 +145,45 @@ Graph::Graph(const char * inputfilename) {
 }
 
 void Graph::printVector(vector<vertex> & vect){
-    cout<<"[";
+    terminal_colorized_output red (RED),green(GREEN),normal(DEFAULT),cyan(CYAN),purple(PURPLE),bgpurple(BG_BLUE),bgnormal(BG_DEFAULT),brown(BROWN);
+    cout<<red<<"["<<normal;
     for (auto i : vect) {
-        cout<<i.vertexName<<", "<<i.var<<" "; // var = distance
+        cout<<red<<" ("<<normal<<i.vertexName<<brown<<","<<normal<<cyan<<i.var<<normal<<red<<") "<<normal; // var = distance
     }
-    cout<<"]"<<endl;
+    cout<<red<<"]"<<normal<<endl;
+    
 }
-void Graph::printVector(vector<string> & vect){
-    cout<<"[";
+void Graph::fprintVector(vector<string> & vect){
+    outputfile<<"[";
     for (auto i : vect) {
-        cout<<i<<", "; // var = distance
+        outputfile<<i<<", "; // var = distance
     }
-    cout<<"]"<<endl;
+    outputfile<<"]"<<endl;
+}
+
+void Graph::printVector(vector<string> & vect){
+    terminal_colorized_output red (RED),green(GREEN),normal(DEFAULT),cyan(CYAN),purple(PURPLE),bgpurple(BG_BLUE),bgnormal(BG_DEFAULT),brown(BROWN);
+    cout<<red<<"["<<normal;
+    for (auto i : vect) {
+        cout<<i<<brown<<", "<<normal; // var = distance
+    }
+    cout<<red<<"]"<<normal<<endl;
 }
 
 void Graph::showGraphContent(){
-    cout<< "adjacencyList"<<endl;
+    terminal_colorized_output red (RED),green(GREEN),normal(DEFAULT),cyan(CYAN),purple(PURPLE),bgpurple(BG_BLUE),bgnormal(BG_DEFAULT);
+    cout<< red <<"adjacencyList"<<normal<<endl;
     for ( auto i : mgraph) {
         cout << i.first<<" : ";
         Graph::printVector(i.second);
     }
-    cout<< "Offers"<<endl;
+    cout<< green <<"Offers"<<normal<<endl;
     
     for (auto i : offers) {
         cout << i.first<<" : ";
         Graph::printVector(i.second);
     }
-    cout <<"demand"<<endl;
+    cout << green<<"demand"<<normal<<endl;
     for (auto i :demands) {
         cout<< i.first <<" : ";
         Graph::printVector(i.second);
@@ -203,7 +211,7 @@ bool Graph::pathExistsFromTo(string origin , string destination){
     return n>1;
 }
 
-bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pathTwo){
+bool Graph::insertPathOneIntoPathTwo(vector<string> & pathOne, vector<string> & pathTwo){
     int minmumLinkerPathWeight = INFINITY;
     string lastVertex =pathTwo[pathTwo.size()-1];
     int sizeOfNewPath = 0; //how many vertices he's got
@@ -214,10 +222,8 @@ bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pa
         vector<string> traversedPath ;
         for (auto i : pathTwo){
             traversedPath.push_back(i);
-            // FIXME: this need to be enhanced , to find a more optemised appendNode
             vector<string> linkerPath;
             if (pathExistsFromTo(i, pathOne[0])){
-                
                 linkerPath = shortestPath(i,pathOne[0]);
                 if (pathWeight(linkerPath) + pathWeight(traversedPath) < minmumLinkerPathWeight) {
                     minmumLinkerPathWeight = pathWeight(linkerPath) + pathWeight(traversedPath);
@@ -290,20 +296,13 @@ bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pa
                     }
             }
         }
-        
         return true;
     }
 }
-//#warning FIXME
-//#error bug
-
-//FIXME : test method
 bool pathContainCriticalVertices(vector<string> & path , vector<string> & criticalVertices){
-    
     bool newPath = true;
     auto pathIter = path.begin();
     for (auto i :criticalVertices) {
-        
         if (newPath) { // then we will try to locate the critical vertex i which is the beginning of some demand . if we find it then proceed to next phase else return false
             while (pathIter != path.end()) {
                 if (i != *pathIter)
@@ -311,7 +310,6 @@ bool pathContainCriticalVertices(vector<string> & path , vector<string> & critic
                 else
                     break;
             }
-           
             if (i!= *pathIter) // pathIter reached the end of path witout finding a match
                 return false;
         }else{//then we will try to locate the critical vertex i which is the end of some demand from the last pathIter position otherwise it doesn't make sense
@@ -321,8 +319,8 @@ bool pathContainCriticalVertices(vector<string> & path , vector<string> & critic
                 else
                     break;
             }
-           if (i!= *pathIter)
-               return false;
+            if (i!= *pathIter)
+                return false;
             else
                 pathIter = path.begin(); // reinit pathIter for the next demand lookup
         }
@@ -331,17 +329,17 @@ bool pathContainCriticalVertices(vector<string> & path , vector<string> & critic
     return true; // found all critical vertices
 }
 void Graph::tryToSatisfyAllDemands(const char* outputfilename ){
-    //FIXME : implement method
+    terminal_colorized_output red (RED),green(GREEN),normal(DEFAULT),cyan(CYAN),purple(PURPLE),bgpurple(BG_BLUE),bgnormal(BG_DEFAULT),brown(BROWN);
     auto demandcopy = demands ;
     int deletionIndex = -1 ;
     auto offerCopy = offers ;
     bool offerSatisfied;
-    outputfile.open(outputfilename ,fstream::app); //FIXME: when done testing add fstream::app flag to open file i append mode
+    outputfile.open(outputfilename ,fstream::app);
     for (auto i = offerCopy.begin() ; i != offerCopy.end(); i++) {
         for(auto j = i->second.begin() ;j != i->second.end() ;j++){ // adjacency list vertex-Offer
             offerSatisfied = false;
             vector<string> offerPath;
-           // offerPath.resize(0);
+            // offerPath.resize(0);
             offerPath=shortestPath(i->first , j->vertexName );
             if (offerPath.size() < 2 ) { //there is no path
                 cout<< "impossible path"<<endl; //FIXME: problem with size calculation here, body of the if statement never executed witch makes it a dead code
@@ -349,29 +347,30 @@ void Graph::tryToSatisfyAllDemands(const char* outputfilename ){
                 continue;
             }else{
                 //then we need to check the demands
-                vector<string> criticalVertices; 
+                vector<string> criticalVertices;
                 for (auto k = demandcopy.begin() ; k != demandcopy.end(); k++ ) {
                     deletionIndex = -1 ;
                     for ( auto l = k->second.begin() ; l != k->second.end() ; l++) { //adjacency list vertex-demand
                         criticalVertices.push_back(k->first); // eventual duplications are needed here because function pathContainCriticalVertices need a pair set of vertices in in the vector criticalVertices. each pair represent the beginning and the end of demand path
                         criticalVertices.push_back(*(l));
-
+                        
                         vector<string> demandPath ;
                         vector<string> offerPathCopy = offerPath;
                         demandPath.resize(0);
                         demandPath = shortestPath(k->first, *(l));
                         deletionIndex++;
-                        //FIXME: we need to check the critical paths demandPath[0] and demandPath[demandPath.size()-1] for each demand
-                        //FIXME: add a function to check if critical vertices are in offerpathcopy
-                        if (j->var >0 && appendPathOneToPathTwo(demandPath, offerPathCopy) && pathContainCriticalVertices(offerPathCopy, criticalVertices)) {
-                            cout << "the offer : "<<i->first << " ==> "<< j->vertexName << " picked up the demand : "<< k->first <<" --> "<< *l <<endl;
+                        // we need to check the critical paths demandPath[0] and demandPath[demandPath.size()-1] for each demand
+                        if (j->var >0 && insertPathOneIntoPathTwo(demandPath, offerPathCopy) && pathContainCriticalVertices(offerPathCopy, criticalVertices)) {
+                            cout << "the offer : "<<i->first << purple<<" ==> "<<normal<< j->vertexName << " picked up the demand : "<< k->first <<purple<<" --> "<<normal<< *l <<endl;
                             outputfile<<"the offer : "<<i->first << " ==> "<< j->vertexName << " picked up the demand : "<< k->first <<" --> "<< *l <<endl;
-                            cout << "old offer path is :";
+                            cout << red<<"old offer path is :"<<normal;
                             outputfile<< "old offer path is :";
-                            printVector(offerPath); // fixme : write vector to file;
-                            cout << "new offer path is : ";
+                            printVector(offerPath);
+                            fprintVector(offerPath);
+                            cout << green<<"new offer path is : "<<normal;
                             outputfile<<"new offer path is : ";
-                            printVector(offerPathCopy);// fixme : write vector to file;
+                            printVector(offerPathCopy);
+                            fprintVector(offerPathCopy);
                             offerPath = offerPathCopy ;
                             k->second.erase(k->second.begin() + deletionIndex);
                             l--;
@@ -379,76 +378,67 @@ void Graph::tryToSatisfyAllDemands(const char* outputfilename ){
                         }else if (j->var == 0) { // then offer is satisfied
                             break;
                         }else if (pathContainCriticalVertices(offerPathCopy, criticalVertices) == false){ // the current demand stashed the previous satisfied demands so what we need to do is leave it until maybe next offer can take care of it
-                            
-                            
-                            
                         }else{ // then the problem is with the append
-                            
                         }
                     }
                     if (j->var == 0) { // then offer is satisfied
-                        cout<< "offer : "<< i->first << " ==> "<< j->vertexName <<" satisfied the folloawing demands : "<<endl;
+                        cout<< "offer : "<< i->first << purple<<" ==> "<<normal<< j->vertexName <<" satisfied the folloawing demands : "<<endl;
                         outputfile<<"offer : "<< i->first << " ==> "<< j->vertexName <<" satisfied the folloawing demands : "<<endl;
                         // display satisfied demands that we can find in criticalVertices
                         bool newDemand = true;
                         for (auto i : criticalVertices) {
                             if(newDemand){
                                 cout<< i;
-                            outputfile<<i;
+                                outputfile<<i;
                             }else{
-                                cout<< " --> "<< i <<endl;
+                                cout<< purple<<" --> "<<normal<< i <<endl;
                                 outputfile<<" --> "<< i <<endl;
                             }
                             newDemand = !newDemand;
                         }
-                        cout<< "original path : ";
+                        cout<< red<<"original path : "<<normal;
                         outputfile<<"original path : ";
                         auto originalPath = shortestPath(i->first,j->vertexName );
-                        printVector(originalPath); // fixme : write vector to file
-                        cout << "new path : ";
+                        printVector(originalPath);
+                        fprintVector(originalPath);
+                        cout << green<<"new path : "<<normal;
                         outputfile<<"new path : ";
                         printVector(offerPath); // offerPath which contain latest path with no stashed demands
-                        // fixme : write vector to file
+                        fprintVector(offerPath);
                         i->second.erase(j);
                         j--;
                         break;
                     }
                 }
             }
-            
         }
-        
-        
-        
-        
         if (i->second.size() == 0){ //
             offerCopy.erase(i);
             i--;
         }
-        
     }
     // report all unsatisfied demands:
     if (demandcopy.size()>0) { // then print unsatisfied demands
-        cout << " ****************"<<endl;
-        cout << "unsatisfied demands are : "<<endl;
+        cout <<bgpurple<<green<< " ****************"<<normal<<bgnormal<<endl;
+        cout << red<<"unsatisfied demands are : "<<normal<<endl;
         outputfile<<" ****************"<<endl;
         outputfile<<"unsatisfied demands are : "<<endl;
         for (auto i : demandcopy) {
             for (auto j : i.second ) {
-                cout << i.first <<" --> "<<j <<endl;
+                cout << i.first <<purple<<" --> "<<normal<<j <<endl;
                 outputfile<<i.first <<" --> "<<j <<endl;
             }
         }
     }else{
-        cout << "All demand successfully satisfied "<<endl;
+        cout << green<<"All demand successfully satisfied "<<normal<<endl;
         outputfile<<"All demand successfully satisfied "<<endl;
     }
-    
     outputfile.close();
 }
 void Graph::tryToSatisfyDemandsKeepingTheShortestPath(const char* outputfilename ){
-
-    outputfile.open(outputfilename,fstream::app);//FIXME: when done testing add fstream::app flag to open file i append mode
+    //define color modifier for fancy terminal display
+    terminal_colorized_output red (RED),green(GREEN),normal(DEFAULT),cyan(CYAN),purple(PURPLE),bgpurple(BG_BLUE),bgnormal(BG_DEFAULT);
+    outputfile.open(outputfilename,fstream::app);
     auto offercopy = offers ; // must make a copy because data might be changed
     bool demandSatisfied ;
     for (  auto i : demands) {
@@ -478,13 +468,12 @@ void Graph::tryToSatisfyDemandsKeepingTheShortestPath(const char* outputfilename
                             // demand was satisfied
                             --k->var; //decrement the number of availeble seats for the offer
                             demandSatisfied = true ;
-                            cout<< endl<<"demand satisfied"<<endl;
-                            cout<< "demand : " <<i.first <<"->"<< h<<endl;
-                            cout<< "satisfied by offer : "<< j.first << "->"<< k->vertexName << k->var<<endl;
+                            cout<< endl<<"demand : " <<i.first <<purple<<" --> "<<normal<< h<<green<<" was satisfied"<<normal<<endl;
+                            cout<< "satisfied by offer : "<< j.first << purple<<" ==> "<<normal<< k->vertexName <<" : "<<cyan <<k->var<<normal<<endl;
                             //write result to a file
-                            outputfile<<endl<< "demand satisfied"<<endl;
-                            outputfile<<"demand : " <<i.first <<"->"<< h<<endl;
-                            outputfile<<"satisfied by offer : "<< j.first << "->"<< k->vertexName << k->var<<endl;
+                            
+                            outputfile<<endl<<"demand : " <<i.first <<" --> "<< h<<" was satisfied"<<endl;
+                            outputfile<<"satisfied by offer : "<< j.first << " ==> "<< k->vertexName<<" : " << k->var<<endl;
                             break;
                         }
                     }
@@ -495,12 +484,11 @@ void Graph::tryToSatisfyDemandsKeepingTheShortestPath(const char* outputfilename
             }
             if (!demandSatisfied) {
                 //write to file that demand can't be satisfied
-                cout<< "demand can't be satisfied "<< i.first << " -> " << h<<endl;
-                outputfile<<"demand can't be satisfied "<< i.first << " -> " << h<<endl;
-               
+                cout<< red<<"demand can't be satisfied "<<normal<< i.first << " --> " << h<<endl;
+                outputfile<<"demand can't be satisfied "<< i.first << " --> " << h<<endl;
             }
-            cout<<endl<<"*************"<<endl;
-             outputfile<<endl<<"*************"<<endl;
+            cout<<endl<<bgpurple<<green<< "****************"<<normal<<bgnormal<<endl;
+            outputfile<<endl<<"****************"<<endl;
         }
     }
     outputfile.close();
@@ -513,9 +501,7 @@ bool Graph::pathOneContainPathTow(vector<string> & Offer, vector<string> & deman
     // normally we shoold carpool with a single person to avoid the risk of time overlap betwwen drivers if we want to satisfy a single demand with multiple offers
     // that's why we need to check if eventual path for the demand is included in the path of the offer and not the other way around
     return includes(Offer.begin(), Offer.end(), demand.begin(), demand.end(),compareString);
-//Returns true if the sorted range [Offer.begin(),Offer.end()) contains all the elements in the sorted range [demand.begin(),demand.end())
-    
-    
+    //Returns true if the sorted range [Offer.begin(),Offer.end()) contains all the elements in the sorted range [demand.begin(),demand.end())
 }
 vector<string>  Graph::shortestPath(string origin, string destination){
     string source = origin;
@@ -524,7 +510,6 @@ vector<string>  Graph::shortestPath(string origin, string destination){
     map<string ,int> previousPathWeight;
     //Bellman-Ford init
     set<string>::iterator vertexIterator = vertices.begin();
- 
     pathweight[source] = 0;
     previousPathWeight[source] = 0 ;
     for (; vertexIterator != vertices.end() ; vertexIterator ++) {
@@ -532,7 +517,6 @@ vector<string>  Graph::shortestPath(string origin, string destination){
             continue;
         parent[*vertexIterator] = "";
         previousPathWeight[*vertexIterator] = INFINITY;
-        
     }
     //starts Bellman-Ford' s iterations
     vertexIterator = vertices.begin();
@@ -547,25 +531,21 @@ vector<string>  Graph::shortestPath(string origin, string destination){
             predecessorIterator = predecessors.begin();
             for(; predecessorIterator != predecessors.end(); predecessorIterator++){
                 if (previousPathWeight[*vertexIterator] > previousPathWeight[*predecessorIterator] + EdgeWeight(*predecessorIterator,*vertexIterator) && EdgeWeight(*predecessorIterator,*vertexIterator) > 0) {
-                    
-               //relax the node
-                        pathweight[*vertexIterator] =  previousPathWeight[*predecessorIterator] + EdgeWeight(*predecessorIterator,*vertexIterator);
-                        parent[*vertexIterator] = *predecessorIterator;
+                    //relax the node
+                    pathweight[*vertexIterator] =  previousPathWeight[*predecessorIterator] + EdgeWeight(*predecessorIterator,*vertexIterator);
+                    parent[*vertexIterator] = *predecessorIterator;
                 }
             }
         }
-    
         vertexIterator = vertices.begin();
         //export the pathweight elements to the previousPathweight
         for ( ;vertexIterator != vertices.end()  ; vertexIterator++) {
             if (pathweight[*vertexIterator]>0) // to check if the pathweight is set because otherwise it's going to asign 0 when the key *vertexIterator is not defined in the pathWeight map
-            previousPathWeight[*vertexIterator] = pathweight[*vertexIterator];
+                previousPathWeight[*vertexIterator] = pathweight[*vertexIterator];
         }
         vertexIterator = vertices.begin();
-        
     }
     // no need to implement the negative cycle detection given that all weights are positive for this project
-    
     // constructing the shortest path
     vector<string> shortestPath;
     stack<string> s;
@@ -584,15 +564,15 @@ vector<string>  Graph::shortestPath(string origin, string destination){
     return shortestPath;
 }
 int Graph::EdgeWeight(string head, string tail){
-auto iter = mgraph[head].begin();
-auto end = mgraph[head].end();
-for(; iter != end ; iter++ )
-{
-    if((*iter).vertexName == tail ){
-    return (*iter).var ;
-    } 
-}
-return -1;
+    auto iter = mgraph[head].begin();
+    auto end = mgraph[head].end();
+    for(; iter != end ; iter++ )
+    {
+        if((*iter).vertexName == tail ){
+            return (*iter).var ;
+        }
+    }
+    return -1;
 }
 void Graph::printShortestPathFromto(string start , string finish){
     vector<string> path = Graph::shortestPath(start, finish);
@@ -606,9 +586,4 @@ void Graph::printVerticesSet(){
     for (auto i : vertices) {
         cout<<i<<" ";
     }
-}
-Graph::~Graph(){
-}
-void Graph::writeSolutionToFile(){
-    ofstream outputfile("result.txt");
 }

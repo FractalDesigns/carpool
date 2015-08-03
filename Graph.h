@@ -9,6 +9,7 @@
 #include <stack>
 #include <map>
 #include <set>
+#include "terminal_colorized_output.h"
 
 using namespace std;
 
@@ -30,6 +31,7 @@ typedef struct vertex{
 
 class Graph {
 private:
+
     map<string, vector<vertex> > mgraph;
     map<string, vector<vertex> > offers;
     map<string, vector<string> > demands;
@@ -42,11 +44,12 @@ private:
     int EdgeWeight(string,string);
     void printVector(vector<vertex> & );
     void printVector(vector<string> & );
+    void fprintVector(vector<string> & );
     bool pathExistsFromTo(string, string);
     vector<string> searchForpreviousVerticesOf(string);
     
 public:
-    bool appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pathTwo);
+    bool insertPathOneIntoPathTwo(vector<string> & pathOne, vector<string> & pathTwo);
     vector<string>  shortestPath(string , string );
     bool pathOneContainPathTow(vector<string> &, vector<string> &);
     void tryToSatisfyDemandsKeepingTheShortestPath(const char* outputfilename = "result.txt");
@@ -55,9 +58,7 @@ public:
     
     Graph(const char* inputfilename);
     int pathWeight(vector<string> &);
-    bool inputfileisgood();
     void showGraphContent();
-    void writeSolutionToFile();
     void printVerticesSet();
     ~Graph();
 
