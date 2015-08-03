@@ -211,17 +211,23 @@ bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pa
     if (pathTwo[0] == pathOne[0]) {
         appendNode = pathTwo[0];
     }else{
+        vector<string> traversedPath ;
         for (auto i : pathTwo){
+            traversedPath.push_back(i);
+            // FIXME: this need to be enhanced , to find a more optemised appendNode
             vector<string> linkerPath;
             if (pathExistsFromTo(i, pathOne[0])){
+                
                 linkerPath = shortestPath(i,pathOne[0]);
-                if (pathWeight(linkerPath)< minmumLinkerPathWeight) {
-                    minmumLinkerPathWeight = pathWeight(linkerPath);
+                if (pathWeight(linkerPath) + pathWeight(traversedPath) < minmumLinkerPathWeight) {
+                    minmumLinkerPathWeight = pathWeight(linkerPath) + pathWeight(traversedPath);
                     appendNode = i;
                 }
             }
         }
     }
+    if(!pathExistsFromTo(pathOne[pathOne.size() -1], lastVertex))
+        return false;
     if (appendNode == "" ){
         return false; // not possible to get from any vertex of path two to the first vertex of path one
     }else if (appendNode == pathTwo[pathTwo.size()-1]) { // *(pathTwo.end()) doesn't work it always return an empty string
@@ -230,11 +236,26 @@ bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pa
         auto iter1 = pathOne.begin();
         bool startAppend =false;
         auto iter2 = pathTwo.begin();
+        
         while (iter2!= pathTwo.end() ) {
             sizeOfNewPath++;
             iter2 = pathTwo.begin() + sizeOfNewPath - 1 ;
             if (*iter2 == appendNode) {
-                //FIXME: insert method reallocate another space inthe memory for the vector each time causing the bad access code
+                //the insert method reallocate another space inthe memory for the vector each time causing the bad access code
+                auto linkerPath = shortestPath(appendNode,pathOne[0] );
+                //remove empty strings from linkerPath
+                for (auto i = linkerPath.begin(); i != linkerPath.end(); i++) {
+                    if (*i == "")
+                        linkerPath.erase(i);
+                }
+                //insert the content of linker path into pathTwo
+                auto l = linkerPath.begin() +1 ;
+                while (l != linkerPath.end() -1 && *(l-1) != appendNode && l != linkerPath.end()) {
+                    pathTwo.insert(++iter2, *l);
+                    sizeOfNewPath++;
+                    iter2 = pathTwo.begin() + sizeOfNewPath - 1;
+                    l++;
+                }
                 if (*iter1 == appendNode){
                     iter1++;
                     //continue;
@@ -256,7 +277,7 @@ bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pa
         //first we need to resize the path two to get rid of overflowwing nodes
         pathTwo.resize(sizeOfNewPath);
         if ( *(pathOne.end()) != lastVertex){
-        auto pathTail = shortestPath(pathOne[pathOne.size() - 1],lastVertex);
+            auto pathTail = shortestPath(pathOne[pathOne.size() - 1],lastVertex);
             // remove empty strings from pathTail
             for (auto i = pathTail.begin() ; i != pathTail.end(); i++ ) {
                 if (*i == "")
@@ -265,9 +286,9 @@ bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pa
             if (pathTail.size()>1 ) {// if it's not then pathTail contain only one vertex witch is lastVertex
                 for (auto i : pathTail)
                     if (i != pathTwo[pathTwo.size() -1]) {
-                    pathTwo.push_back(i);
+                        pathTwo.push_back(i);
                     }
-                    }
+            }
         }
         
         return true;
@@ -276,53 +297,158 @@ bool Graph::appendPathOneToPathTwo(vector<string> & pathOne, vector<string> & pa
 //#warning FIXME
 //#error bug
 
+//FIXME : test method
+bool pathContainCriticalVertices(vector<string> & path , vector<string> & criticalVertices){
+    
+    bool newPath = true;
+    auto pathIter = path.begin();
+    for (auto i :criticalVertices) {
+        
+        if (newPath) { // then we will try to locate the critical vertex i which is the beginning of some demand . if we find it then proceed to next phase else return false
+            while (pathIter != path.end()) {
+                if (i != *pathIter)
+                    pathIter++;
+                else
+                    break;
+            }
+           
+            if (i!= *pathIter) // pathIter reached the end of path witout finding a match
+                return false;
+        }else{//then we will try to locate the critical vertex i which is the end of some demand from the last pathIter position otherwise it doesn't make sense
+            while (pathIter != path.end()) {
+                if (i != *pathIter)
+                    pathIter++;
+                else
+                    break;
+            }
+           if (i!= *pathIter)
+               return false;
+            else
+                pathIter = path.begin(); // reinit pathIter for the next demand lookup
+        }
+        newPath = !newPath;
+    }
+    return true; // found all critical vertices
+}
 void Graph::tryToSatisfyAllDemands(const char* outputfilename ){
     //FIXME : implement method
     auto demandcopy = demands ;
     int deletionIndex = -1 ;
     auto offerCopy = offers ;
     bool offerSatisfied;
-    outputfile.open(outputfilename ); //FIXME: when done testing add fstream::app flag to open file i append mode
-    for (auto i : offerCopy) {
-        for(auto j : i.second){ // adjacency list vertex-Offer
+    outputfile.open(outputfilename ,fstream::app); //FIXME: when done testing add fstream::app flag to open file i append mode
+    for (auto i = offerCopy.begin() ; i != offerCopy.end(); i++) {
+        for(auto j = i->second.begin() ;j != i->second.end() ;j++){ // adjacency list vertex-Offer
             offerSatisfied = false;
             vector<string> offerPath;
            // offerPath.resize(0);
-            offerPath= shortestPath(i.first , j.vertexName );
+            offerPath=shortestPath(i->first , j->vertexName );
             if (offerPath.size() < 2 ) { //there is no path
                 cout<< "impossible path"<<endl; //FIXME: problem with size calculation here, body of the if statement never executed witch makes it a dead code
                 outputfile<< endl<<"impossible path";
                 continue;
             }else{
                 //then we need to check the demands
-                for (auto k : demandcopy ) {
-                    for ( auto l : k.second) { //adjacency list vertex-demand
+                vector<string> criticalVertices; 
+                for (auto k = demandcopy.begin() ; k != demandcopy.end(); k++ ) {
+                    deletionIndex = -1 ;
+                    for ( auto l = k->second.begin() ; l != k->second.end() ; l++) { //adjacency list vertex-demand
+                        criticalVertices.push_back(k->first); // eventual duplications are needed here because function pathContainCriticalVertices need a pair set of vertices in in the vector criticalVertices. each pair represent the beginning and the end of demand path
+                        criticalVertices.push_back(*(l));
+
                         vector<string> demandPath ;
+                        vector<string> offerPathCopy = offerPath;
                         demandPath.resize(0);
-                        demandPath = shortestPath(k.first, l );
+                        demandPath = shortestPath(k->first, *(l));
                         deletionIndex++;
-                        //FIXME: write a method called apend path to append demand path to the offer path
-                        if (j.var >0 && appendPathOneToPathTwo(demandPath, offerPath)) {
-                            j.var--;
+                        //FIXME: we need to check the critical paths demandPath[0] and demandPath[demandPath.size()-1] for each demand
+                        //FIXME: add a function to check if critical vertices are in offerpathcopy
+                        if (j->var >0 && appendPathOneToPathTwo(demandPath, offerPathCopy) && pathContainCriticalVertices(offerPathCopy, criticalVertices)) {
+                            cout << "the offer : "<<i->first << " ==> "<< j->vertexName << " picked up the demand : "<< k->first <<" --> "<< *l <<endl;
+                            outputfile<<"the offer : "<<i->first << " ==> "<< j->vertexName << " picked up the demand : "<< k->first <<" --> "<< *l <<endl;
+                            cout << "old offer path is :";
+                            outputfile<< "old offer path is :";
+                            printVector(offerPath); // fixme : write vector to file;
+                            cout << "new offer path is : ";
+                            outputfile<<"new offer path is : ";
+                            printVector(offerPathCopy);// fixme : write vector to file;
+                            offerPath = offerPathCopy ;
+                            k->second.erase(k->second.begin() + deletionIndex);
+                            l--;
+                            j->var--;
+                        }else if (j->var == 0) { // then offer is satisfied
+                            break;
+                        }else if (pathContainCriticalVertices(offerPathCopy, criticalVertices) == false){ // the current demand stashed the previous satisfied demands so what we need to do is leave it until maybe next offer can take care of it
+                            
+                            
+                            
+                        }else{ // then the problem is with the append
                             
                         }
-                        if (j.var == 0) {
-                            break;
-                        }
-                        
                     }
-                    if (j.var == 0) {
+                    if (j->var == 0) { // then offer is satisfied
+                        cout<< "offer : "<< i->first << " ==> "<< j->vertexName <<" satisfied the folloawing demands : "<<endl;
+                        outputfile<<"offer : "<< i->first << " ==> "<< j->vertexName <<" satisfied the folloawing demands : "<<endl;
+                        // display satisfied demands that we can find in criticalVertices
+                        bool newDemand = true;
+                        for (auto i : criticalVertices) {
+                            if(newDemand){
+                                cout<< i;
+                            outputfile<<i;
+                            }else{
+                                cout<< " --> "<< i <<endl;
+                                outputfile<<" --> "<< i <<endl;
+                            }
+                            newDemand = !newDemand;
+                        }
+                        cout<< "original path : ";
+                        outputfile<<"original path : ";
+                        auto originalPath = shortestPath(i->first,j->vertexName );
+                        printVector(originalPath); // fixme : write vector to file
+                        cout << "new path : ";
+                        outputfile<<"new path : ";
+                        printVector(offerPath); // offerPath which contain latest path with no stashed demands
+                        // fixme : write vector to file
+                        i->second.erase(j);
+                        j--;
                         break;
                     }
                 }
             }
+            
         }
+        
+        
+        
+        
+        if (i->second.size() == 0){ //
+            offerCopy.erase(i);
+            i--;
+        }
+        
     }
+    // report all unsatisfied demands:
+    if (demandcopy.size()>0) { // then print unsatisfied demands
+        cout << " ****************"<<endl;
+        cout << "unsatisfied demands are : "<<endl;
+        outputfile<<" ****************"<<endl;
+        outputfile<<"unsatisfied demands are : "<<endl;
+        for (auto i : demandcopy) {
+            for (auto j : i.second ) {
+                cout << i.first <<" --> "<<j <<endl;
+                outputfile<<i.first <<" --> "<<j <<endl;
+            }
+        }
+    }else{
+        cout << "All demand successfully satisfied "<<endl;
+        outputfile<<"All demand successfully satisfied "<<endl;
+    }
+    
     outputfile.close();
 }
 void Graph::tryToSatisfyDemandsKeepingTheShortestPath(const char* outputfilename ){
 
-    outputfile.open(outputfilename);//FIXME: when done testing add fstream::app flag to open file i append mode
+    outputfile.open(outputfilename,fstream::app);//FIXME: when done testing add fstream::app flag to open file i append mode
     auto offercopy = offers ; // must make a copy because data might be changed
     bool demandSatisfied ;
     for (  auto i : demands) {
